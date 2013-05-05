@@ -48,7 +48,7 @@ Usage
 
 Options
 
-  [version]                            - Supports "4.7" / "6.0" and "master" for now
+  [version]                            - Supports "4.7", "6.0", "6.1" and "master" for now
 
   --extension=<name>                    - The extension which should be tested
   --quiet                               - Avoid too much output
@@ -96,17 +96,17 @@ EOF
 
 ##########################################################
 
-	\curl -sSL http://localhost/continuousintegration/res/composer.json > "${1}/composer.json"
-	\curl -sSL http://localhost/continuousintegration/res/LocalConfiguration.php_ > "${1}/t3/typo3conf/LocalConfiguration.php"
-	\curl -sSL http://localhost/continuousintegration/res/localconf.php_ > "${1}/t3/typo3conf/localconf.php"
+	\curl -sSL https://gist.github.com/tolleiv/5520430/raw/composer.json > "${1}/composer.json"
+	\curl -sSL https://gist.github.com/tolleiv/5520430/raw/LocalConfiguration.php > "${1}/t3/typo3conf/LocalConfiguration.php"
+	\curl -sSL https://gist.github.com/tolleiv/5520430/raw/localconf.php > "${1}/t3/typo3conf/localconf.php"
 
 	case "$test_typo3_branch" in
 
 		TYPO3_4-7|TYPO3_4-6|TYPO3_4-5)
-				\curl -sSL http://localhost/continuousintegration/res/autoload_4.7.php_ > "${1}/autoload.php" ;;
+				\curl -sSL https://gist.github.com/tolleiv/5520430/raw/autoload_4.7.php > "${1}/autoload.php" ;;
 
 		*)
-				\curl -sSL http://localhost/continuousintegration/res/autoload.php_ > "${1}/autoload.php" ;;
+				\curl -sSL https://gist.github.com/tolleiv/5520430/raw/autoload.php > "${1}/autoload.php" ;;
 	esac
 
 	sed -i -e "s~###path###~${1}~g" "${1}/t3/typo3conf/LocalConfiguration.php"
@@ -132,7 +132,7 @@ while (( $# > 0 )) ; do
 			export "test_${token/-/_}_flag"=1
 		;;
 
-		4.5|4.6|4.7|6.0)
+		4.5|4.6|4.7|6.0|6.1)
 			export "test_typo3_branch"="TYPO3_${token/\./-}"
 		;;
 		master)

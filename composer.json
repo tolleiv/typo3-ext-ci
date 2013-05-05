@@ -1,0 +1,16 @@
+{
+	"name": "aoe/ci-testing",
+	"description": "description_text",
+	"minimum-stability": "stable",
+	"authors": [
+		{
+			"name": "Tolleiv Nietsch",
+			"email": "tolleiv.nietsch@aoemedia.de"
+		}
+	],
+	"require-dev": {
+		"phpunit/phpunit": "*",
+		"whatthejeff/nyancat-phpunit-resultprinter": "1.0.*@dev"
+	},
+	"minimum-stability": "dev"
+}
