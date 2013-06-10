@@ -18,7 +18,7 @@ run() {
 
 	php  -d apc.enable_cli=Off composer.phar install --dev
 
-	cloneorupdate "${CWD}/Core" "git://git.typo3.org/TYPO3v4/Core.git" "${2}"
+	cloneorupdate "${CWD}/Core" "git://git.typo3.org/Packages/TYPO3.CMS.git" "${2}"
 	cloneorupdate "${CWD}/t3/typo3conf/ext/phpunit" "git://git.typo3.org/TYPO3v4/Extensions/phpunit.git" "master"
 
 	cd t3;
