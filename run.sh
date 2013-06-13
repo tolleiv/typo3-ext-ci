@@ -14,9 +14,11 @@ run() {
 	CWD=`pwd`
 	prepare_files $CWD $1
 
-	curl -sS https://getcomposer.org/installer | php
 
-	php  -d apc.enable_cli=Off composer.phar install --dev
+
+	curl -sS https://getcomposer.org/installer | php  -d detect_unicode=Off -d apc.enable_cli=Off
+
+	php -d detect_unicode=Off -d apc.enable_cli=Off composer.phar install --dev
 
 	cloneorupdate "${CWD}/Core" "git://git.typo3.org/Packages/TYPO3.CMS.git" "${2}"
 	cloneorupdate "${CWD}/t3/typo3conf/ext/phpunit" "git://git.typo3.org/TYPO3v4/Extensions/phpunit.git" "master"
