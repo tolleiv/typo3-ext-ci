@@ -1,5 +1,5 @@
 <?php
-require_once 'vendor/autoload.php';
+if (file_exists('vendor/autoload.php')) require_once 'vendor/autoload.php';
 require_once '###path###/t3/typo3/sysext/core/Classes/Core/Bootstrap.php';
 define('TYPO3_MODE', 'BE');
 define('TYPO3_cliMode', TRUE);
