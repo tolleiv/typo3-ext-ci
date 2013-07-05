@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export test_typo3_branch
-export test_no_tests_flag test_quiet_flag test_install_extbase_flag test_install_fluid_flag test_miau_flag
+export test_no_tests_flag test_quiet_flag test_install_extbase_flag test_install_fluid_flag test_miau_flag test_travis_flag
 
 qprint() {
 	if (( ${test_quiet_flag:-0} == 0 )) ; then
@@ -15,10 +15,13 @@ run() {
 	prepare_files $CWD $1
 
 
-
-	curl -sS https://getcomposer.org/installer | php  -d detect_unicode=Off -d apc.enable_cli=Off
-
-	php -d detect_unicode=Off -d apc.enable_cli=Off composer.phar install --dev
+	if (( ${test_travis_flag:-0} == 0 )) ; then
+		curl -sS https://getcomposer.org/installer | php  -d detect_unicode=Off -d apc.enable_cli=Off
+		php -d detect_unicode=Off -d apc.enable_cli=Off composer.phar install --dev
+		PHPUNIT=vendor/bin/phpunit
+	else
+		PHPUNIT=phpunit
+	fi
 
 	cloneorupdate "${CWD}/Core" "git://git.typo3.org/Packages/TYPO3.CMS.git" "${2}"
 	cloneorupdate "${CWD}/t3/typo3conf/ext/phpunit" "git://git.typo3.org/TYPO3v4/Extensions/phpunit.git" "master"
@@ -35,7 +38,7 @@ run() {
 	else
 		qprint "Running the actual tests"
 		cd $CWD
-		vendor/bin/phpunit --verbose --testsuite "${1}_all"
+		$PHPUNIT --verbose --testsuite "${1}_all"
 	fi
 }
 
@@ -55,6 +58,10 @@ Options
   --extension=<name>                    - The extension which should be tested
   --quiet                               - Avoid too much output
   --no-tests                            - Prepare everything but do not trigger the tests
+  --travis                              - Special setup for travis-ci builds which assume
+                                          that we're within a checked out extension folder.
+                                          To speed testing, this also uses the exisiting
+                                          phpunit installation.                                          
 
   --install-extbase                     - Not implemented yet
   --install-fluid                       - Not implemented yet
@@ -70,7 +77,18 @@ cloneorupdate() {
 }
 
 prepare_files() {
-	mkdir -p "${1}/t3/typo3conf/ext"
+	
+	if (( ${test_travis_flag:-0} == 1 )) ; then
+		BASENAME=`basename "${1}"`
+		cd ..
+		mkdir -p "${1}/../${BASENAME}_/t3/typo3conf/ext"
+		mv "./${BASENAME}" "${1}/../${BASENAME}_/t3/typo3conf/ext/${2}"
+		mv "./${BASENAME}_" "./${BASENAME}"
+		cd "./${BASENAME}"
+	else
+		mkdir -p "${1}/t3/typo3conf/ext"
+	fi	
+	
 
 ############################ phpunit.xml ##############################
 
@@ -98,17 +116,17 @@ EOF
 
 ##########################################################
 
-	\curl -sSL https://gist.github.com/tolleiv/5520430/raw/composer.json > "${1}/composer.json"
-	\curl -sSL https://gist.github.com/tolleiv/5520430/raw/LocalConfiguration.php > "${1}/t3/typo3conf/LocalConfiguration.php"
-	\curl -sSL https://gist.github.com/tolleiv/5520430/raw/localconf.php > "${1}/t3/typo3conf/localconf.php"
+	\curl -sSL https://raw.github.com/tolleiv/typo3-ext-ci/master/composer.json > "${1}/composer.json"
+	\curl -sSL https://raw.github.com/tolleiv/typo3-ext-ci/master/LocalConfiguration.php > "${1}/t3/typo3conf/LocalConfiguration.php"
+	\curl -sSL https://raw.github.com/tolleiv/typo3-ext-ci/master/localconf.php > "${1}/t3/typo3conf/localconf.php"
 
 	case "$test_typo3_branch" in
 
 		TYPO3_4-7|TYPO3_4-6|TYPO3_4-5)
-				\curl -sSL https://gist.github.com/tolleiv/5520430/raw/autoload_4.7.php > "${1}/autoload.php" ;;
+				\curl -sSL https://raw.github.com/tolleiv/typo3-ext-ci/master/autoload_4.7.php > "${1}/autoload.php" ;;
 
 		*)
-				\curl -sSL https://gist.github.com/tolleiv/5520430/raw/autoload.php > "${1}/autoload.php" ;;
+				\curl -sSL https://raw.github.com/tolleiv/typo3-ext-ci/master/autoload.php > "${1}/autoload.php" ;;
 	esac
 
 	sed -i -e "s~###path###~${1}~g" "${1}/t3/typo3conf/LocalConfiguration.php"
@@ -130,7 +148,7 @@ while (( $# > 0 )) ; do
 			export "test_extension"="${token/extension=/}"
 		;;
 
-		no-tests|quiet|install-extbase|install-fluid|miau)
+		no-tests|quiet|install-extbase|install-fluid|miau|travis)
 			export "test_${token/-/_}_flag"=1
 		;;
 
