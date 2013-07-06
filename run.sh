@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export test_typo3_branch
+export test_typo3_branch test_db_host test_db_user test_db_password test_db_name
 export test_no_tests_flag test_quiet_flag test_install_extbase_flag test_install_fluid_flag test_miau_flag test_travis_flag
 
 qprint() {
@@ -61,7 +61,9 @@ Options
   --travis                              - Special setup for travis-ci builds which assume
                                           that we're within a checked out extension folder.
                                           To speed testing, this also uses the exisiting
-                                          phpunit installation.                                          
+                                          phpunit installation.      
+  --db-(host|user|password|name)	- MySQL Database connection - needed in case you're
+  					  running test with db-based fixtures.
 
   --install-extbase                     - Not implemented yet
   --install-fluid                       - Not implemented yet
@@ -129,6 +131,15 @@ EOF
 				\curl -sSL https://raw.github.com/tolleiv/typo3-ext-ci/master/autoload.php > "${1}/autoload.php" ;;
 	esac
 
+	sed -i -e "s~###dbhost###~${test_db_host:=###path###/db.sqlite}~" "${1}/t3/typo3conf/LocalConfiguration.php"
+	sed -i -e "s~###dbhost###~${test_db_host}~" "${1}/t3/typo3conf/localconf.php"
+	sed -i -e "s~###dbuser###~${test_db_user:=nothing}~" "${1}/t3/typo3conf/LocalConfiguration.php"
+	sed -i -e "s~###dbuser###~${test_db_user}~" "${1}/t3/typo3conf/localconf.php"
+	sed -i -e "s~###dbpassword###~${test_db_password:=nothing}~" "${1}/t3/typo3conf/LocalConfiguration.php"
+	sed -i -e "s~###dbpassword###~${test_db_password}~" "${1}/t3/typo3conf/localconf.php"
+	sed -i -e "s~###dbname###~${test_db_name:=nothing}~" "${1}/t3/typo3conf/LocalConfiguration.php"
+	sed -i -e "s~###dbname###~${test_db_name}~" "${1}/t3/typo3conf/localconf.php"
+
 	sed -i -e "s~###path###~${1}~g" "${1}/t3/typo3conf/LocalConfiguration.php"
 	sed -i -e "s~###path###~${1}~g" "${1}/t3/typo3conf/localconf.php"
 	sed -i -e "s~###path###~${1}~g" "${1}/autoload.php"
@@ -150,6 +161,11 @@ while (( $# > 0 )) ; do
 
 		no-tests|quiet|install-extbase|install-fluid|miau|travis)
 			export "test_${token/-/_}_flag"=1
+		;;
+		db-host=*|db-user=*|db-password=*|db-name=*)
+			K="${token/=.*/}"
+			V="${token/db-(host|user|password|name)=/}
+			export "test_${K/-/_}"=$V
 		;;
 
 		4.5|4.6|4.7|6.0|6.1)
