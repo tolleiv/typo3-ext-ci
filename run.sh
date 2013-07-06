@@ -164,7 +164,7 @@ while (( $# > 0 )) ; do
 		;;
 		db-host=*|db-user=*|db-password=*|db-name=*)
 			K="${token/=.*/}"
-			V="${token/db-(host|user|password|name)=/}
+			V="${token/db-(host|user|password|name)=/}"
 			export "test_${K/-/_}"=$V
 		;;
 
